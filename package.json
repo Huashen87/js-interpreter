@@ -1,0 +1,16 @@
+{
+  "name": "js-interpreter",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "repository": "git@github.com:Huashen87/js-interpreter.git",
+  "author": "Huashen87 <HuashenCoding@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "ts-node src/index.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.4",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.4"
+  }
+}
