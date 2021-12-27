@@ -1,6 +1,6 @@
 import type Lexer from './lexer';
 import type Token from './token';
-import { ASTNode, BinOp, Num } from './ast';
+import { ASTNode, BinOp, Num, Unary } from './ast';
 import { TT } from './token';
 
 class Parser {
@@ -18,9 +18,21 @@ class Parser {
   }
 
   private factor(): ASTNode {
+    if ([TT.ADD, TT.SUB].includes(this.currToken.type)) {
+      const token = this.currToken;
+      this.eat(this.currToken.type);
+      const node = new Unary(token, this.factor());
+      return node;
+    }
     if (this.currToken.type === TT.NUM) {
       const node = new Num(this.currToken, Number(this.currToken.value));
       this.eat(TT.NUM);
+      return node;
+    }
+    if (this.currToken.type === TT.LPAREN) {
+      this.eat(TT.LPAREN);
+      const node = this.expr();
+      this.eat(TT.RPAREN);
       return node;
     }
     throw this.err('Invalid syntax');

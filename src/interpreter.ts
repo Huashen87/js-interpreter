@@ -1,4 +1,4 @@
-import type { BinOp, Num } from './ast';
+import type { BinOp, Num, Unary } from './ast';
 import type Parser from './parser';
 import { TT } from './token';
 import NodeVisitor from './visitor';
@@ -20,6 +20,13 @@ class Interpreter extends NodeVisitor {
     if (node.token.type === TT.SUB) return left - right;
     if (node.token.type === TT.MUL) return left * right;
     if (node.token.type === TT.DIV) return left / right;
+  }
+
+  private visitUnary(node: Unary) {
+    const value = this.visit(node.node);
+
+    if (node.token.type === TT.ADD) return +value;
+    if (node.token.type === TT.SUB) return -value;
   }
 
   interprete() {

@@ -19,3 +19,9 @@ export class BinOp extends ASTNode {
     super(token);
   }
 }
+
+export class Unary extends ASTNode {
+  constructor(token: Token, public readonly node: ASTNode) {
+    super(token);
+  }
+}

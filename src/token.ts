@@ -7,6 +7,8 @@ export enum TT {
   SUB,
   MUL,
   DIV,
+  LPAREN,
+  RPAREN,
   EOF,
 }
 

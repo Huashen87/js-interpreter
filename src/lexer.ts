@@ -20,12 +20,23 @@ class Lexer {
 
   private number(): string {
     const start = this.index;
-    while (this.isNum(this.currChar)) this.advance();
+    let hasDot = false;
+    while (this.isNum(this.currChar) || this.currChar === '.') {
+      if (this.currChar === '.') {
+        if (hasDot) throw this.err('Invalid number syntax');
+        hasDot = true;
+      }
+      this.advance();
+    }
     return this.text.slice(start, this.index);
   }
 
   next(): Token {
     while (this.currChar !== undefined) {
+      if (this.currChar === ' ') {
+        this.advance();
+        continue;
+      }
       if (this.isNum(this.currChar)) {
         const token = new Token(TT.NUM, this.number());
         return token;
@@ -47,6 +58,16 @@ class Lexer {
       }
       if (this.currChar === '/') {
         const token = new Token(TT.DIV, this.currChar);
+        this.advance();
+        return token;
+      }
+      if (this.currChar === '(') {
+        const token = new Token(TT.LPAREN, this.currChar);
+        this.advance();
+        return token;
+      }
+      if (this.currChar === ')') {
+        const token = new Token(TT.RPAREN, this.currChar);
         this.advance();
         return token;
       }
