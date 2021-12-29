@@ -14,7 +14,10 @@ class Parser {
 
   private eat(type: TT) {
     if (this.currToken.type === type) this.currToken = this.lexer.next();
-    else throw this.err(`Expected token [${TT[type]}], but got [${TT[type]}]`);
+    else
+      throw this.err(
+        `Expected token [${TT[type]}], but got [${TT[this.currToken.type]}]`
+      );
   }
 
   private factor(): ASTNode {
