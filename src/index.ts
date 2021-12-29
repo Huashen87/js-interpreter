@@ -14,9 +14,8 @@ const readline = () => {
     const parser = new Parser(lexer);
     const interpreter = new Interpreter(parser);
 
-    const result = interpreter.interprete();
-    console.log(`\x1b[36m\x1b[1m${result}\x1b[0m`);
-
+    const results = interpreter.interprete();
+    results.forEach((result) => console.log(`\x1b[36m\x1b[1m${result}\x1b[0m`));
     readline();
   });
 };

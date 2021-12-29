@@ -1,27 +1,35 @@
 import type Token from './token';
 
 export abstract class ASTNode {
-  constructor(public readonly token: Token) {}
+  constructor() {}
 }
 
-export class Num extends ASTNode {
-  constructor(token: Token, public readonly value: number) {
-    super(token);
+export class Program extends ASTNode {
+  constructor(public readonly body: ASTNode[]) {
+    super();
   }
 }
 
-export class BinOp extends ASTNode {
+type LiteralType = string | number | boolean;
+
+export class Literal extends ASTNode {
+  constructor(public readonly token: Token, public readonly value: LiteralType) {
+    super();
+  }
+}
+
+export class BinaryExpression extends ASTNode {
   constructor(
-    token: Token,
+    public readonly token: Token,
     public readonly left: ASTNode,
     public readonly right: ASTNode
   ) {
-    super(token);
+    super();
   }
 }
 
-export class Unary extends ASTNode {
-  constructor(token: Token, public readonly node: ASTNode) {
-    super(token);
+export class UnaryExpression extends ASTNode {
+  constructor(public readonly token: Token, public readonly node: ASTNode) {
+    super();
   }
 }

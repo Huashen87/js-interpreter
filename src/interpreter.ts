@@ -1,4 +1,4 @@
-import type { BinOp, Num, Unary } from './ast';
+import type { BinaryExpression, Literal, Program, UnaryExpression } from './ast';
 import type Parser from './parser';
 import { TT } from './token';
 import NodeVisitor from './visitor';
@@ -8,11 +8,11 @@ class Interpreter extends NodeVisitor {
     super();
   }
 
-  private visitNum(node: Num) {
+  private visitLiteral(node: Literal) {
     return node.value;
   }
 
-  private visitBinOp(node: BinOp) {
+  private visitBinaryExpression(node: BinaryExpression) {
     const left = this.visit(node.left);
     const right = this.visit(node.right);
 
@@ -22,14 +22,18 @@ class Interpreter extends NodeVisitor {
     if (node.token.type === TT.DIV) return left / right;
   }
 
-  private visitUnary(node: Unary) {
+  private visitUnaryExpression(node: UnaryExpression) {
     const value = this.visit(node.node);
 
     if (node.token.type === TT.ADD) return +value;
     if (node.token.type === TT.SUB) return -value;
   }
 
-  interprete() {
+  private visitProgram(program: Program) {
+    return program.body.map((node) => this.visit(node));
+  }
+
+  interprete(): any[] {
     const ast = this.parser.parse();
     const result = this.visit(ast);
     return result;

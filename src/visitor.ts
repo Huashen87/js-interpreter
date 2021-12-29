@@ -1,7 +1,7 @@
 import type { ASTNode } from './ast';
 
 abstract class NodeVisitor {
-  protected visit(node: ASTNode): number {
+  protected visit(node: ASTNode) {
     const name = `this.visit${node.constructor.name}`;
     return eval(`typeof ${name} === 'function' ? ${name}(node) : this.err(name)`);
   }

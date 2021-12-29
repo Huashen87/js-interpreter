@@ -1,6 +1,6 @@
 import type Lexer from './lexer';
 import type Token from './token';
-import { ASTNode, BinOp, Num, Unary } from './ast';
+import { ASTNode, BinaryExpression, Literal, Program, UnaryExpression } from './ast';
 import { TT } from './token';
 
 class Parser {
@@ -21,11 +21,11 @@ class Parser {
     if ([TT.ADD, TT.SUB].includes(this.currToken.type)) {
       const token = this.currToken;
       this.eat(this.currToken.type);
-      const node = new Unary(token, this.factor());
+      const node = new UnaryExpression(token, this.factor());
       return node;
     }
     if (this.currToken.type === TT.NUM) {
-      const node = new Num(this.currToken, Number(this.currToken.value));
+      const node = new Literal(this.currToken, Number(this.currToken.value));
       this.eat(TT.NUM);
       return node;
     }
@@ -43,7 +43,7 @@ class Parser {
     while ([TT.MUL, TT.DIV].includes(this.currToken.type)) {
       const token = this.currToken;
       this.eat(token.type);
-      node = new BinOp(token, node, this.factor());
+      node = new BinaryExpression(token, node, this.factor());
     }
     return node;
   }
@@ -53,14 +53,22 @@ class Parser {
     while ([TT.ADD, TT.SUB].includes(this.currToken.type)) {
       const token = this.currToken;
       this.eat(token.type);
-      node = new BinOp(token, node, this.term());
+      node = new BinaryExpression(token, node, this.term());
     }
     return node;
   }
 
+  private program(): ASTNode {
+    const program = new Program([]);
+    while (this.currToken.type !== TT.EOF) {
+      const expr = this.expr();
+      program.body.push(expr);
+    }
+    return program;
+  }
+
   parse() {
-    const node = this.expr();
-    if (this.currToken.type !== TT.EOF) throw this.err('Invalid syntax');
+    const node = this.program();
     return node;
   }
 }
