@@ -6,7 +6,8 @@
   "author": "Huashen87 <HuashenCoding@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node src/index.ts"
+    "start": "ts-node src/index.ts",
+    "js": "ts-node src/index.ts js/test.js"
   },
   "devDependencies": {
     "@types/node": "^17.0.4",

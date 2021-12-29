@@ -58,6 +58,8 @@ class Parser {
       this.eat(token.type);
       node = new BinaryExpression(token, node, this.term());
     }
+    this.eat(TT.NEWLINE);
+    while (this.currToken.type === TT.NEWLINE) this.eat(TT.NEWLINE);
     return node;
   }
 

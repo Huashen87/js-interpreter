@@ -31,6 +31,11 @@ class Lexer {
     return this.text.slice(start, this.index);
   }
 
+  private newLine() {
+    while ([';', '\n', '\r'].includes(this.currChar)) this.advance();
+    return new Token(TT.NEWLINE, this.currChar);
+  }
+
   next(): Token {
     while (this.currChar !== undefined) {
       if (this.currChar === ' ') {
@@ -71,7 +76,11 @@ class Lexer {
         this.advance();
         return token;
       }
-      throw this.err('Invalid character');
+      if ([';', '\n', '\r'].includes(this.currChar)) {
+        const token = this.newLine();
+        return token;
+      }
+      throw this.err(`Invalid character, got ${this.currChar}`);
     }
     return new Token(TT.EOF);
   }

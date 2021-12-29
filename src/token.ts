@@ -9,6 +9,7 @@ export enum TT {
   DIV,
   LPAREN,
   RPAREN,
+  NEWLINE,
   EOF,
 }
 
