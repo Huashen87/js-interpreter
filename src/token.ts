@@ -9,7 +9,13 @@ export enum TT {
   DIV,
   LPAREN,
   RPAREN,
+  VAR,
+  LET,
+  CONST,
+  ID,
+  ASSIGN,
   NEWLINE,
+  COMMA,
   EOF,
 }
 

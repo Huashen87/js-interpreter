@@ -1,6 +1,16 @@
 import type Lexer from './lexer';
 import type Token from './token';
-import { ASTNode, BinaryExpression, Literal, Program, UnaryExpression } from './ast';
+import {
+  ASTNode,
+  BinaryExpression,
+  Identifier,
+  Kind,
+  Literal,
+  Program,
+  UnaryExpression,
+  VariableDeclaration,
+  VariableDeclarator,
+} from './ast';
 import { TT } from './token';
 
 class Parser {
@@ -21,6 +31,11 @@ class Parser {
   }
 
   private factor(): ASTNode {
+    if (this.currToken.type === TT.ID) {
+      const token = this.currToken;
+      this.eat(TT.ID);
+      return new Identifier(token);
+    }
     if ([TT.ADD, TT.SUB].includes(this.currToken.type)) {
       const token = this.currToken;
       this.eat(this.currToken.type);
@@ -58,16 +73,47 @@ class Parser {
       this.eat(token.type);
       node = new BinaryExpression(token, node, this.term());
     }
-    this.eat(TT.NEWLINE);
-    while (this.currToken.type === TT.NEWLINE) this.eat(TT.NEWLINE);
     return node;
+  }
+
+  private varDeclarator(kind: Kind): VariableDeclarator {
+    while (this.currToken.type === TT.NEWLINE) this.eat(TT.NEWLINE);
+    const id = new Identifier(this.currToken);
+    this.eat(TT.ID);
+
+    if (this.currToken.type === TT.ASSIGN || kind === 'const') {
+      this.eat(TT.ASSIGN);
+      return new VariableDeclarator(id, this.expr());
+    }
+    return new VariableDeclarator(id);
+  }
+
+  private varDeclaration(): ASTNode {
+    const kind = this.currToken.value as Kind;
+    this.eat(this.currToken.type);
+    const varDec = new VariableDeclaration(kind, []);
+
+    varDec.declarations.push(this.varDeclarator(kind));
+    while (this.currToken.type === TT.COMMA) {
+      this.eat(TT.COMMA);
+      varDec.declarations.push(this.varDeclarator(kind));
+    }
+    return varDec;
   }
 
   private program(): ASTNode {
     const program = new Program([]);
     while (this.currToken.type !== TT.EOF) {
-      const expr = this.expr();
-      program.body.push(expr);
+      if ([TT.VAR, TT.LET, TT.CONST].includes(this.currToken.type)) {
+        const varDec = this.varDeclaration();
+        program.body.push(varDec);
+      } else {
+        const expr = this.expr();
+        program.body.push(expr);
+      }
+
+      this.eat(TT.NEWLINE);
+      while (this.currToken.type === TT.NEWLINE) this.eat(TT.NEWLINE);
     }
     return program;
   }
