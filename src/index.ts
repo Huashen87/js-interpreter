@@ -27,7 +27,7 @@ const readline = () => {
 };
 
 if (process.argv.length === 2) readline();
-if (process.argv.length === 3) {
+else if (process.argv.length === 3) {
   const buffer = fs.readFileSync(process.argv[2]);
   interpreteAndPrintResult(buffer.toString());
   process.exit(0);
