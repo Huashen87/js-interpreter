@@ -62,3 +62,13 @@ export class Identifier extends Expression {
     super();
   }
 }
+
+export class AssignmentExpression extends Expression {
+  constructor(
+    public readonly token: Token,
+    public readonly left: Identifier,
+    public readonly right: Expression
+  ) {
+    super();
+  }
+}

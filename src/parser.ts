@@ -1,6 +1,7 @@
 import type Lexer from './lexer';
 import type Token from './token';
 import {
+  AssignmentExpression,
   ASTNode,
   BinaryExpression,
   Identifier,
@@ -34,7 +35,11 @@ class Parser {
     if (this.currToken.type === TT.ID) {
       const token = this.currToken;
       this.eat(TT.ID);
-      return new Identifier(token);
+      const id = new Identifier(token);
+      const newToken = this.currToken;
+      if (newToken.type !== TT.ASSIGN) return id;
+      this.eat(TT.ASSIGN);
+      return new AssignmentExpression(newToken, id, this.expr());
     }
     if ([TT.ADD, TT.SUB].includes(this.currToken.type)) {
       const token = this.currToken;

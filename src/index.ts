@@ -10,8 +10,7 @@ const interpretAndPrintResult = (text: string) => {
   const interpreter = new Interpreter(parser);
 
   const results = interpreter.interpret();
-  console.log(interpreter.symbolTables);
-  // results.forEach((result) => console.log(`\x1b[36m\x1b[1m${result}\x1b[0m`));
+  results.forEach((result) => console.log(`\x1b[36m\x1b[1m${result}\x1b[0m`));
 };
 
 const lineReader = rl.createInterface({

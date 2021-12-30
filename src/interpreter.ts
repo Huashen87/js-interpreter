@@ -1,6 +1,8 @@
 import type {
+  AssignmentExpression,
   BinaryExpression,
   Identifier,
+  Kind,
   Literal,
   Program,
   UnaryExpression,
@@ -11,8 +13,15 @@ import type Parser from './parser';
 import { TT } from './token';
 import NodeVisitor from './visitor';
 
+interface Variable {
+  kind: Kind;
+  value: any;
+}
+
 class Interpreter extends NodeVisitor {
-  public readonly symbolTables: Map<string, any>[] = [new Map<string, any>()];
+  public readonly symbolTables: Map<string, Variable>[] = [
+    new Map<string, Variable>(),
+  ];
 
   constructor(private parser: Parser) {
     super();
@@ -44,23 +53,36 @@ class Interpreter extends NodeVisitor {
   }
 
   private visitVariableDeclaration(node: VariableDeclaration) {
-    node.declarations.forEach((dec) => this.visit(dec));
+    node.declarations.forEach((dec) => this.visitVariableDeclarator(dec, node.kind));
   }
 
-  private visitVariableDeclarator(node: VariableDeclarator) {
+  private visitVariableDeclarator(node: VariableDeclarator, kind: Kind) {
     const id = node.id.token.value;
     if (!node.init) {
-      this.last(this.symbolTables).set(id, undefined);
+      this.last(this.symbolTables).set(id, { kind, value: undefined });
       return;
     }
     const value = this.visit(node.init);
-    this.last(this.symbolTables).set(id, value);
+    this.last(this.symbolTables).set(id, { kind, value });
   }
 
   private visitIdentifier(node: Identifier) {
     const name = node.token.value;
     for (let i = this.symbolTables.length - 1; i >= 0; i--)
-      if (this.symbolTables[i].has(name)) return this.symbolTables[i].get(name);
+      if (this.symbolTables[i].has(name)) return this.symbolTables[i].get(name)!.value;
+    throw new ReferenceError(`${name} is not defined`);
+  }
+
+  private visitAssignmentExpression(node: AssignmentExpression) {
+    const name = node.left.token.value;
+    const value = this.visit(node.right);
+    for (let i = this.symbolTables.length - 1; i >= 0; i--) {
+      if (!this.symbolTables[i].has(name)) continue;
+      const kind = this.symbolTables[i].get(name)!.kind;
+      if (kind === 'const') throw new TypeError(`Assignment to constant variable.`);
+      this.symbolTables[i].set(name, { kind, value });
+      return value;
+    }
     throw new ReferenceError(`${name} is not defined`);
   }
 
