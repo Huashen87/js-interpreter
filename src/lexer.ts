@@ -105,6 +105,16 @@ class Lexer {
         this.advance();
         return token;
       }
+      if (this.currChar === '{') {
+        const token = new Token(TT.LBRACKET, this.currChar);
+        this.advance();
+        return token;
+      }
+      if (this.currChar === '}') {
+        const token = new Token(TT.RBRACKET, this.currChar);
+        this.advance();
+        return token;
+      }
       if (this.currChar === '=') {
         const token = new Token(TT.ASSIGN, this.currChar);
         this.advance();

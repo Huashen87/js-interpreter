@@ -4,6 +4,7 @@ import {
   AssignmentExpression,
   ASTNode,
   BinaryExpression,
+  BlockStatement,
   Identifier,
   Kind,
   Literal,
@@ -106,20 +107,39 @@ class Parser {
     return varDec;
   }
 
-  private program(): ASTNode {
-    const program = new Program([]);
-    while (this.currToken.type !== TT.EOF) {
+  private skipNewLine() {
+    while (this.currToken.type === TT.NEWLINE) this.eat(TT.NEWLINE);
+  }
+
+  private body(): ASTNode[] {
+    const body: ASTNode[] = [];
+    this.skipNewLine();
+    while (![TT.EOF, TT.RBRACKET].includes(this.currToken.type)) {
       if ([TT.VAR, TT.LET, TT.CONST].includes(this.currToken.type)) {
         const varDec = this.varDeclaration();
-        program.body.push(varDec);
-      } else {
-        const expr = this.expr();
-        program.body.push(expr);
+        body.push(varDec);
+        this.skipNewLine();
+        continue;
       }
-
-      this.eat(TT.NEWLINE);
-      while (this.currToken.type === TT.NEWLINE) this.eat(TT.NEWLINE);
+      if (this.currToken.type === TT.LBRACKET) {
+        this.eat(TT.LBRACKET);
+        const block = new BlockStatement([]);
+        block.body.push(...this.body());
+        this.eat(TT.RBRACKET);
+        body.push(block);
+        this.skipNewLine();
+        continue;
+      }
+      const expr = this.expr();
+      body.push(expr);
+      this.skipNewLine();
     }
+    return body;
+  }
+
+  private program(): ASTNode {
+    const program = new Program([]);
+    program.body.push(...this.body());
     return program;
   }
 

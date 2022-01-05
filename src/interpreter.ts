@@ -1,6 +1,7 @@
 import type {
   AssignmentExpression,
   BinaryExpression,
+  BlockStatement,
   Identifier,
   Kind,
   Literal,
@@ -10,18 +11,12 @@ import type {
   VariableDeclarator,
 } from './ast';
 import type Parser from './parser';
+import SymbolTable from './symbolTable';
 import { TT } from './token';
 import NodeVisitor from './visitor';
 
-interface Variable {
-  kind: Kind;
-  value: any;
-}
-
 class Interpreter extends NodeVisitor {
-  public readonly symbolTables: Map<string, Variable>[] = [
-    new Map<string, Variable>(),
-  ];
+  private symbolTable: SymbolTable = new SymbolTable(null, 'global');
 
   constructor(private parser: Parser) {
     super();
@@ -34,7 +29,6 @@ class Interpreter extends NodeVisitor {
   private visitBinaryExpression(node: BinaryExpression) {
     const left = this.visit(node.left);
     const right = this.visit(node.right);
-
     if (node.token.type === TT.ADD) return left + right;
     if (node.token.type === TT.SUB) return left - right;
     if (node.token.type === TT.MUL) return left * right;
@@ -43,13 +37,8 @@ class Interpreter extends NodeVisitor {
 
   private visitUnaryExpression(node: UnaryExpression) {
     const value = this.visit(node.node);
-
     if (node.token.type === TT.ADD) return +value;
     if (node.token.type === TT.SUB) return -value;
-  }
-
-  private last<T>(array: T[]): T {
-    return array[array.length - 1];
   }
 
   private visitVariableDeclaration(node: VariableDeclaration) {
@@ -58,36 +47,31 @@ class Interpreter extends NodeVisitor {
 
   private visitVariableDeclarator(node: VariableDeclarator, kind: Kind) {
     const id = node.id.token.value;
-    if (!node.init) {
-      this.last(this.symbolTables).set(id, { kind, value: undefined });
-      return;
-    }
-    const value = this.visit(node.init);
-    this.last(this.symbolTables).set(id, { kind, value });
+    const value = node.init ? this.visit(node.init) : undefined;
+    this.symbolTable.declare(id, value, kind);
   }
 
   private visitIdentifier(node: Identifier) {
     const name = node.token.value;
-    for (let i = this.symbolTables.length - 1; i >= 0; i--)
-      if (this.symbolTables[i].has(name)) return this.symbolTables[i].get(name)!.value;
-    throw new ReferenceError(`${name} is not defined`);
+    return this.symbolTable.get(name);
   }
 
   private visitAssignmentExpression(node: AssignmentExpression) {
     const name = node.left.token.value;
     const value = this.visit(node.right);
-    for (let i = this.symbolTables.length - 1; i >= 0; i--) {
-      if (!this.symbolTables[i].has(name)) continue;
-      const kind = this.symbolTables[i].get(name)!.kind;
-      if (kind === 'const') throw new TypeError(`Assignment to constant variable.`);
-      this.symbolTables[i].set(name, { kind, value });
-      return value;
-    }
-    throw new ReferenceError(`${name} is not defined`);
+    this.symbolTable.set(name, value);
+    return value;
   }
 
   private visitProgram(program: Program) {
     return program.body.map((node) => this.visit(node));
+  }
+
+  private visitBlockStatement(block: BlockStatement) {
+    this.symbolTable = new SymbolTable(this.symbolTable);
+    const results = block.body.map((node) => this.visit(node));
+    this.symbolTable = this.symbolTable.prev!;
+    return results;
   }
 
   interpret(): any[] {

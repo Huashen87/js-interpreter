@@ -72,3 +72,9 @@ export class AssignmentExpression extends Expression {
     super();
   }
 }
+
+export class BlockStatement extends ASTNode {
+  constructor(public readonly body: ASTNode[]) {
+    super();
+  }
+}

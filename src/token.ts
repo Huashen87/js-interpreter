@@ -9,6 +9,8 @@ export enum TT {
   DIV,
   LPAREN,
   RPAREN,
+  LBRACKET,
+  RBRACKET,
   VAR,
   LET,
   CONST,
