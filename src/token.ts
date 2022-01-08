@@ -14,6 +14,8 @@ export enum TT {
   VAR,
   LET,
   CONST,
+  FUNCTION,
+  RETURN,
   ID,
   ASSIGN,
   NEWLINE,

@@ -9,6 +9,8 @@ class Lexer {
     this.reservedWord.set('var', TT.VAR);
     this.reservedWord.set('let', TT.LET);
     this.reservedWord.set('const', TT.CONST);
+    this.reservedWord.set('function', TT.FUNCTION);
+    this.reservedWord.set('return', TT.RETURN);
   }
 
   private err(msg: string = ''): Error {

@@ -2,10 +2,14 @@ import type {
   AssignmentExpression,
   BinaryExpression,
   BlockStatement,
+  CallExpression,
+  FunctionDeclaration,
+  FunctionExpression,
   Identifier,
   Kind,
   Literal,
   Program,
+  ReturnStatement,
   UnaryExpression,
   VariableDeclaration,
   VariableDeclarator,
@@ -69,9 +73,48 @@ class Interpreter extends NodeVisitor {
 
   private visitBlockStatement(block: BlockStatement) {
     this.symbolTable = new SymbolTable(this.symbolTable);
-    const results = block.body.map((node) => this.visit(node));
+    const result = this.iterateBlock(block);
     this.symbolTable = this.symbolTable.prev!;
-    return results;
+    return result;
+  }
+
+  private visitFunctionDeclaration(func: FunctionDeclaration) {
+    const fn = this.visitFunctionExpression(func);
+    this.symbolTable.declare(func.id.token.value, fn, 'var');
+  }
+
+  private visitFunctionExpression(func: FunctionExpression) {
+    const symbolTable = new SymbolTable(this.symbolTable, 'function');
+    return (args: any[]) => {
+      this.symbolTable = symbolTable;
+      func.params.forEach((param, i) =>
+        this.symbolTable.declare(param.token.value, args[i], 'var')
+      );
+      const result = this.iterateBlock(func.body);
+      this.symbolTable = this.symbolTable.prev!;
+      return result?.value;
+    };
+  }
+
+  private iterateBlock(block: BlockStatement) {
+    for (const node of block.body) {
+      const value = this.visit(node);
+      if (value?.return) return value;
+    }
+  }
+
+  private visitReturnStatement(ret: ReturnStatement) {
+    return {
+      return: true,
+      value: ret.argument ? this.visit(ret.argument) : undefined,
+    };
+  }
+
+  private visitCallExpression(node: CallExpression) {
+    const callee = this.visit(node.callee);
+    if (typeof callee !== 'function')
+      throw new TypeError(`${callee} is not a function`);
+    return callee(node.args.map((arg) => this.visit(arg)));
   }
 
   interpret(): any[] {

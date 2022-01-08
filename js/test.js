@@ -1,7 +1,7 @@
-let a = 0;
-{
-  a = 5;
-  const a = 1;
-  a;
+function add(a) {
+  return function (b) {
+    return a + b;
+  };
 }
-a;
+
+add(1)(4);

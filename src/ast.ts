@@ -78,3 +78,35 @@ export class BlockStatement extends ASTNode {
     super();
   }
 }
+
+export class FunctionDeclaration extends ASTNode {
+  constructor(
+    public readonly id: Identifier,
+    public readonly params: Identifier[],
+    public readonly body: BlockStatement
+  ) {
+    super();
+  }
+}
+
+export class FunctionExpression extends Expression {
+  constructor(
+    public readonly id: Identifier | null,
+    public readonly params: Identifier[],
+    public readonly body: BlockStatement
+  ) {
+    super();
+  }
+}
+
+export class ReturnStatement extends ASTNode {
+  constructor(public readonly argument: Expression | null) {
+    super();
+  }
+}
+
+export class CallExpression extends Expression {
+  constructor(public readonly callee: Expression, public readonly args: Expression[]) {
+    super();
+  }
+}

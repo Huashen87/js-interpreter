@@ -5,10 +5,15 @@ import {
   ASTNode,
   BinaryExpression,
   BlockStatement,
+  CallExpression,
+  Expression,
+  FunctionDeclaration,
+  FunctionExpression,
   Identifier,
   Kind,
   Literal,
   Program,
+  ReturnStatement,
   UnaryExpression,
   VariableDeclaration,
   VariableDeclarator,
@@ -32,15 +37,40 @@ class Parser {
       );
   }
 
+  private args(): Expression[] {
+    const args: Expression[] = [];
+    while (this.currToken.type !== TT.RPAREN) {
+      args.push(this.expr());
+      if (this.currToken.type !== TT.COMMA) return args;
+      this.eat(TT.COMMA);
+    }
+    return args;
+  }
+
   private factor(): ASTNode {
+    if (this.currToken.type === TT.FUNCTION) {
+      return this.funcExpression();
+    }
     if (this.currToken.type === TT.ID) {
       const token = this.currToken;
       this.eat(TT.ID);
-      const id = new Identifier(token);
-      const newToken = this.currToken;
-      if (newToken.type !== TT.ASSIGN) return id;
-      this.eat(TT.ASSIGN);
-      return new AssignmentExpression(newToken, id, this.expr());
+      let node: Expression = new Identifier(token);
+      let currToken = this.currToken;
+      if (currToken.type === TT.ASSIGN) {
+        this.eat(TT.ASSIGN);
+        node = new AssignmentExpression(currToken, node as Identifier, this.expr());
+        return node;
+      }
+      while ([TT.LPAREN].includes(currToken.type)) {
+        currToken = this.currToken;
+        if (currToken.type === TT.LPAREN) {
+          this.eat(TT.LPAREN);
+          const args = this.args();
+          this.eat(TT.RPAREN);
+          node = new CallExpression(node, args);
+        }
+      }
+      return node;
     }
     if ([TT.ADD, TT.SUB].includes(this.currToken.type)) {
       const token = this.currToken;
@@ -97,9 +127,8 @@ class Parser {
   private varDeclaration(): ASTNode {
     const kind = this.currToken.value as Kind;
     this.eat(this.currToken.type);
-    const varDec = new VariableDeclaration(kind, []);
+    const varDec = new VariableDeclaration(kind, [this.varDeclarator(kind)]);
 
-    varDec.declarations.push(this.varDeclarator(kind));
     while (this.currToken.type === TT.COMMA) {
       this.eat(TT.COMMA);
       varDec.declarations.push(this.varDeclarator(kind));
@@ -111,41 +140,94 @@ class Parser {
     while (this.currToken.type === TT.NEWLINE) this.eat(TT.NEWLINE);
   }
 
+  private funcDeclaration(): FunctionDeclaration {
+    this.eat(TT.FUNCTION);
+
+    const id = new Identifier(this.currToken);
+    this.eat(TT.ID);
+
+    this.eat(TT.LPAREN);
+    const params = this.params();
+    this.eat(TT.RPAREN);
+
+    this.eat(TT.LBRACKET);
+    const block = new BlockStatement([...this.body()]);
+    this.eat(TT.RBRACKET);
+
+    return new FunctionDeclaration(id, params, block);
+  }
+
+  private funcExpression(): FunctionExpression {
+    this.eat(TT.FUNCTION);
+
+    const id = this.currToken.type === TT.ID ? new Identifier(this.currToken) : null;
+    if (!!id) this.eat(TT.ID);
+
+    this.eat(TT.LPAREN);
+    const params = this.params();
+    this.eat(TT.RPAREN);
+
+    this.eat(TT.LBRACKET);
+    const block = new BlockStatement([...this.body()]);
+    this.eat(TT.RBRACKET);
+
+    return new FunctionExpression(id, params, block);
+  }
+
+  private params(): Identifier[] {
+    if (this.currToken.type !== TT.ID) return [];
+    const params: Identifier[] = [new Identifier(this.currToken)];
+    this.eat(TT.ID);
+    this.currToken = this.currToken;
+    while (this.currToken.type === TT.COMMA) {
+      this.eat(TT.COMMA);
+      params.push(new Identifier(this.currToken));
+      this.eat(TT.ID);
+    }
+    return params;
+  }
+
   private body(): ASTNode[] {
     const body: ASTNode[] = [];
     this.skipNewLine();
     while (![TT.EOF, TT.RBRACKET].includes(this.currToken.type)) {
       if ([TT.VAR, TT.LET, TT.CONST].includes(this.currToken.type)) {
-        const varDec = this.varDeclaration();
-        body.push(varDec);
+        body.push(this.varDeclaration());
+        this.skipNewLine();
+        continue;
+      }
+      if (this.currToken.type === TT.FUNCTION) {
+        body.push(this.funcDeclaration());
+        this.skipNewLine();
+        continue;
+      }
+      if (this.currToken.type === TT.RETURN) {
+        this.eat(TT.RETURN);
+        this.currToken = this.currToken;
+        const arg = this.currToken.type !== TT.NEWLINE ? this.expr() : null;
+        body.push(new ReturnStatement(arg));
         this.skipNewLine();
         continue;
       }
       if (this.currToken.type === TT.LBRACKET) {
         this.eat(TT.LBRACKET);
-        const block = new BlockStatement([]);
-        block.body.push(...this.body());
+        body.push(new BlockStatement([...this.body()]));
         this.eat(TT.RBRACKET);
-        body.push(block);
         this.skipNewLine();
         continue;
       }
-      const expr = this.expr();
-      body.push(expr);
+      body.push(this.expr());
       this.skipNewLine();
     }
     return body;
   }
 
   private program(): ASTNode {
-    const program = new Program([]);
-    program.body.push(...this.body());
-    return program;
+    return new Program([...this.body()]);
   }
 
   parse() {
-    const node = this.program();
-    return node;
+    return this.program();
   }
 }
 
