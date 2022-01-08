@@ -110,3 +110,12 @@ export class CallExpression extends Expression {
     super();
   }
 }
+
+export class MemberExpression extends Expression {
+  constructor(
+    public readonly object: Expression,
+    public readonly property: Expression
+  ) {
+    super();
+  }
+}

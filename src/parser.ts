@@ -12,6 +12,7 @@ import {
   Identifier,
   Kind,
   Literal,
+  MemberExpression,
   Program,
   ReturnStatement,
   UnaryExpression,
@@ -61,13 +62,19 @@ class Parser {
         node = new AssignmentExpression(currToken, node as Identifier, this.expr());
         return node;
       }
-      while ([TT.LPAREN].includes(currToken.type)) {
+      while ([TT.LPAREN, TT.DOT].includes(currToken.type)) {
         currToken = this.currToken;
         if (currToken.type === TT.LPAREN) {
           this.eat(TT.LPAREN);
           const args = this.args();
           this.eat(TT.RPAREN);
           node = new CallExpression(node, args);
+        }
+        if (currToken.type === TT.DOT) {
+          this.eat(TT.DOT);
+          const literal = new Literal(this.currToken, this.currToken.value);
+          this.eat(TT.ID);
+          node = new MemberExpression(node, literal);
         }
       }
       return node;

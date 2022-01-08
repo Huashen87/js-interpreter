@@ -8,6 +8,7 @@ import type {
   Identifier,
   Kind,
   Literal,
+  MemberExpression,
   Program,
   ReturnStatement,
   UnaryExpression,
@@ -24,6 +25,7 @@ class Interpreter extends NodeVisitor {
 
   constructor(private parser: Parser) {
     super();
+    this.symbolTable.declare('console', console, 'var');
   }
 
   private visitLiteral(node: Literal) {
@@ -85,7 +87,7 @@ class Interpreter extends NodeVisitor {
 
   private visitFunctionExpression(func: FunctionExpression) {
     const symbolTable = new SymbolTable(this.symbolTable, 'function');
-    return (args: any[]) => {
+    return (...args: any[]) => {
       this.symbolTable = symbolTable;
       func.params.forEach((param, i) =>
         this.symbolTable.declare(param.token.value, args[i], 'var')
@@ -114,7 +116,14 @@ class Interpreter extends NodeVisitor {
     const callee = this.visit(node.callee);
     if (typeof callee !== 'function')
       throw new TypeError(`${callee} is not a function`);
-    return callee(node.args.map((arg) => this.visit(arg)));
+    return callee(...node.args.map((arg) => this.visit(arg)));
+  }
+
+  private visitMemberExpression(node: MemberExpression) {
+    const object = this.visit(node.object);
+    const property = this.visit(node.property);
+    if (!!object) return object[property];
+    throw new TypeError(`Cannot read properties of ${object} (reading '${property}')`);
   }
 
   interpret(): any[] {

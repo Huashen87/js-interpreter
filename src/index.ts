@@ -4,13 +4,12 @@ import Interpreter from './interpreter';
 import Lexer from './lexer';
 import Parser from './parser';
 
-const interpretAndPrintResult = (text: string) => {
+const interpret = (text: string): any[] => {
   const lexer = new Lexer(text);
   const parser = new Parser(lexer);
   const interpreter = new Interpreter(parser);
 
-  const results = interpreter.interpret();
-  results.forEach((result) => console.log(`\x1b[36m\x1b[1m${result}\x1b[0m`));
+  return interpreter.interpret();
 };
 
 const lineReader = rl.createInterface({
@@ -20,7 +19,8 @@ const lineReader = rl.createInterface({
 
 const readline = () => {
   lineReader.question(`\x1b[33m\x1b[1m${'js> '}\x1b[0m`, (line) => {
-    interpretAndPrintResult(line);
+    const results = interpret(line);
+    results.forEach((result) => console.log(`\x1b[36m\x1b[1m${result}\x1b[0m`));
     readline();
   });
 };
@@ -28,6 +28,6 @@ const readline = () => {
 if (process.argv.length === 2) readline();
 else if (process.argv.length === 3) {
   const buffer = fs.readFileSync(process.argv[2]);
-  interpretAndPrintResult(buffer.toString());
+  interpret(buffer.toString());
   process.exit(0);
 } else throw new Error('Wrong number of argument');

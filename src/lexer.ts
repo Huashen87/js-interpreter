@@ -127,6 +127,11 @@ class Lexer {
         this.advance();
         return token;
       }
+      if (this.currChar === '.') {
+        const token = new Token(TT.DOT, this.currChar);
+        this.advance();
+        return token;
+      }
       if ([';', '\n', '\r'].includes(this.currChar)) {
         const token = this.newLine();
         return token;

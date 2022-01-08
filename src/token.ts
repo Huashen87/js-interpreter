@@ -20,6 +20,7 @@ export enum TT {
   ASSIGN,
   NEWLINE,
   COMMA,
+  DOT,
   EOF,
 }
 
