@@ -4,12 +4,13 @@ import Interpreter from './interpreter';
 import Lexer from './lexer';
 import Parser from './parser';
 
+const interpreter = new Interpreter();
+
 const interpret = (text: string): any[] => {
   const lexer = new Lexer(text);
   const parser = new Parser(lexer);
-  const interpreter = new Interpreter(parser);
 
-  return interpreter.interpret();
+  return interpreter.interpret(parser);
 };
 
 const lineReader = rl.createInterface({
@@ -19,8 +20,12 @@ const lineReader = rl.createInterface({
 
 const readline = () => {
   lineReader.question(`\x1b[33m\x1b[1m${'js> '}\x1b[0m`, (line) => {
-    const results = interpret(line);
-    results.forEach((result) => console.log(`\x1b[36m\x1b[1m${result}\x1b[0m`));
+    try {
+      const results = interpret(line + '\n');
+      results.forEach((result) => console.log(`\x1b[36m\x1b[1m${result}\x1b[0m`));
+    } catch ({ name, message }) {
+      console.log(`${name}: ${message}`);
+    }
     readline();
   });
 };

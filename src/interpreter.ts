@@ -23,7 +23,7 @@ import NodeVisitor from './visitor';
 class Interpreter extends NodeVisitor {
   private symbolTable: SymbolTable = new SymbolTable(null, 'global');
 
-  constructor(private parser: Parser) {
+  constructor() {
     super();
     this.symbolTable.declare('console', console, 'var');
   }
@@ -126,8 +126,8 @@ class Interpreter extends NodeVisitor {
     throw new TypeError(`Cannot read properties of ${object} (reading '${property}')`);
   }
 
-  interpret(): any[] {
-    const ast = this.parser.parse();
+  interpret(parser: Parser): any[] {
+    const ast = parser.parse();
     const result = this.visit(ast);
     return result;
   }
