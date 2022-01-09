@@ -11,6 +11,8 @@ class Lexer {
     this.reservedWord.set('const', TT.CONST);
     this.reservedWord.set('function', TT.FUNCTION);
     this.reservedWord.set('return', TT.RETURN);
+    this.reservedWord.set('true', TT.BOOL);
+    this.reservedWord.set('false', TT.BOOL);
   }
 
   private err(msg: string = ''): Error {

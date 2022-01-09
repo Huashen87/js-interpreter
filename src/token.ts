@@ -3,6 +3,7 @@
  */
 export enum TT {
   NUM,
+  BOOL,
   ADD,
   SUB,
   MUL,

@@ -90,6 +90,11 @@ class Parser {
       this.eat(TT.NUM);
       return node;
     }
+    if (this.currToken.type === TT.BOOL) {
+      const node = new Literal(this.currToken, this.currToken.value === 'true');
+      this.eat(TT.BOOL);
+      return node;
+    }
     if (this.currToken.type === TT.LPAREN) {
       this.eat(TT.LPAREN);
       const node = this.expr();
