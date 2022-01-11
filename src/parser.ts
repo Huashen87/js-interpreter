@@ -26,16 +26,9 @@ class Parser {
 
   constructor(private lexer: Lexer) {}
 
-  private err(msg: string = ''): SyntaxError {
-    return new SyntaxError(`Parser error: ${msg}`);
-  }
-
   private eat(type: TT) {
     if (this.currToken.type === type) this.currToken = this.lexer.next();
-    else
-      throw this.err(
-        `Expected token [${TT[type]}], but got [${TT[this.currToken.type]}]`
-      );
+    else throw new SyntaxError(`Unexpected token '${this.currToken.value}'`);
   }
 
   private args(): Expression[] {
@@ -106,7 +99,7 @@ class Parser {
       this.eat(TT.RPAREN);
       return node;
     }
-    throw this.err('Invalid syntax');
+    throw new SyntaxError('Invalid syntax');
   }
 
   private term(): ASTNode {

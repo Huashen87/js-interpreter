@@ -15,10 +15,6 @@ class Lexer {
     this.reservedWord.set('false', TT.BOOL);
   }
 
-  private err(msg: string = ''): SyntaxError {
-    return new SyntaxError(`Lexer error: ${msg}`);
-  }
-
   private advance() {
     this.currChar = this.text[++this.index];
   }
@@ -32,7 +28,7 @@ class Lexer {
     let hasDot = false;
     while (this.isNum(this.currChar) || this.currChar === '.') {
       if (this.currChar === '.') {
-        if (hasDot) throw this.err('Invalid number syntax');
+        if (hasDot) throw new SyntaxError('Unexpected number');
         hasDot = true;
       }
       this.advance();
@@ -67,7 +63,7 @@ class Lexer {
     this.advance();
     while (this.currChar !== quote) {
       if (this.isNewLine(this.currChar))
-        throw this.err('Unterminated string constant');
+        throw new SyntaxError('Unterminated string constant');
       this.advance();
     }
     return this.text.slice(start, this.index + 1);
@@ -164,7 +160,7 @@ class Lexer {
         this.advance();
         return token;
       }
-      throw this.err(`Invalid character, got ${this.currChar}`);
+      throw new SyntaxError('Invalid or unexpected token');
     }
     return new Token(TT.EOF);
   }
