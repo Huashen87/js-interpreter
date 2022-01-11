@@ -15,7 +15,7 @@ class Lexer {
     this.reservedWord.set('false', TT.BOOL);
   }
 
-  private err(msg: string = ''): Error {
+  private err(msg: string = ''): SyntaxError {
     return new SyntaxError(`Lexer error: ${msg}`);
   }
 

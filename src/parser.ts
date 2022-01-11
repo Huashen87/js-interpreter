@@ -26,8 +26,8 @@ class Parser {
 
   constructor(private lexer: Lexer) {}
 
-  private err(msg: string = '') {
-    return new Error(`Parser error: ${msg}`);
+  private err(msg: string = ''): SyntaxError {
+    return new SyntaxError(`Parser error: ${msg}`);
   }
 
   private eat(type: TT) {
