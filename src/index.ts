@@ -22,7 +22,10 @@ const readline = () => {
   lineReader.question(`\x1b[33m\x1b[1m${'js> '}\x1b[0m`, (line) => {
     try {
       const results = interpret(line + '\n');
-      results.forEach((result) => console.log(`\x1b[36m\x1b[1m${result}\x1b[0m`));
+      results.forEach((result) => {
+        if (typeof result === 'string') result = `'${result}'`;
+        console.log(`\x1b[36m\x1b[1m${result}\x1b[0m`);
+      });
     } catch ({ name, message }) {
       console.log(`${name}: ${message}`);
     }
