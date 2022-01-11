@@ -50,6 +50,16 @@ class Parser {
       this.eat(TT.STR);
       return new Literal(token, token.value.slice(1, -1));
     }
+    if (this.currToken.type === TT.UNDEFINED) {
+      const token = this.currToken;
+      this.eat(TT.UNDEFINED);
+      return new Literal(token, undefined);
+    }
+    if (this.currToken.type === TT.NULL) {
+      const token = this.currToken;
+      this.eat(TT.NULL);
+      return new Literal(token, null);
+    }
     if (this.currToken.type === TT.ID) {
       const token = this.currToken;
       this.eat(TT.ID);

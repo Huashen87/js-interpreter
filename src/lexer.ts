@@ -13,6 +13,8 @@ class Lexer {
     this.reservedWord.set('return', TT.RETURN);
     this.reservedWord.set('true', TT.BOOL);
     this.reservedWord.set('false', TT.BOOL);
+    this.reservedWord.set('undefined', TT.UNDEFINED);
+    this.reservedWord.set('null', TT.NULL);
   }
 
   private advance() {

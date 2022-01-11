@@ -16,7 +16,7 @@ export class Program extends ASTNode {
   }
 }
 
-type LiteralType = string | number | boolean;
+type LiteralType = string | number | boolean | undefined | null;
 
 export class Literal extends Expression {
   constructor(public readonly token: Token, public readonly value: LiteralType) {

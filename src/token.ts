@@ -5,6 +5,8 @@ export enum TT {
   NUM,
   BOOL,
   STR,
+  UNDEFINED,
+  NULL,
   ADD,
   SUB,
   MUL,
