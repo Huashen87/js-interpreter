@@ -16,7 +16,7 @@ class Lexer {
   }
 
   private err(msg: string = ''): Error {
-    return new Error(`Lexer error: ${msg}`);
+    return new SyntaxError(`Lexer error: ${msg}`);
   }
 
   private advance() {
@@ -57,8 +57,24 @@ class Lexer {
     return this.text.slice(start, this.index);
   }
 
+  private isNewLine(str: string): boolean {
+    return str === '\n' || str === '\r';
+  }
+
+  private str(): string {
+    const start = this.index;
+    const quote = this.currChar;
+    this.advance();
+    while (this.currChar !== quote) {
+      if (this.isNewLine(this.currChar))
+        throw this.err('Unterminated string constant');
+      this.advance();
+    }
+    return this.text.slice(start, this.index + 1);
+  }
+
   private newLine() {
-    while ([';', '\n', '\r'].includes(this.currChar)) this.advance();
+    while (this.isNewLine(this.currChar)) this.advance();
     return new Token(TT.NEWLINE);
   }
 
@@ -134,8 +150,18 @@ class Lexer {
         this.advance();
         return token;
       }
-      if ([';', '\n', '\r'].includes(this.currChar)) {
+      if (["'", '"'].includes(this.currChar)) {
+        const token = new Token(TT.STR, this.str());
+        this.advance();
+        return token;
+      }
+      if (this.isNewLine(this.currChar)) {
         const token = this.newLine();
+        return token;
+      }
+      if (this.currChar === ';') {
+        const token = new Token(TT.SEMICOLON, this.currChar);
+        this.advance();
         return token;
       }
       throw this.err(`Invalid character, got ${this.currChar}`);

@@ -4,6 +4,7 @@
 export enum TT {
   NUM,
   BOOL,
+  STR,
   ADD,
   SUB,
   MUL,
@@ -21,6 +22,7 @@ export enum TT {
   ASSIGN,
   NEWLINE,
   COMMA,
+  SEMICOLON,
   DOT,
   EOF,
 }

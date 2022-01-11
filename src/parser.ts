@@ -52,6 +52,11 @@ class Parser {
     if (this.currToken.type === TT.FUNCTION) {
       return this.funcExpression();
     }
+    if (this.currToken.type === TT.STR) {
+      const token = this.currToken;
+      this.eat(TT.STR);
+      return new Literal(token, token.value.slice(1, -1));
+    }
     if (this.currToken.type === TT.ID) {
       const token = this.currToken;
       this.eat(TT.ID);
@@ -149,6 +154,7 @@ class Parser {
   }
 
   private skipNewLine() {
+    if (this.currToken.type === TT.SEMICOLON) this.eat(TT.SEMICOLON);
     while (this.currToken.type === TT.NEWLINE) this.eat(TT.NEWLINE);
   }
 
