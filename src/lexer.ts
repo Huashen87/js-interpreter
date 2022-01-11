@@ -76,6 +76,15 @@ class Lexer {
     return new Token(TT.NEWLINE);
   }
 
+  private skipLineComment() {
+    while (!this.isNewLine(this.currChar)) this.advance();
+  }
+
+  private skipBlockComment() {
+    this.index += this.text.slice(this.index + 2).indexOf('*/') + 4;
+    this.currChar = this.text[this.index];
+  }
+
   next(): Token {
     while (this.currChar !== undefined) {
       if (this.currChar === ' ') {
@@ -109,6 +118,14 @@ class Lexer {
         return token;
       }
       if (this.currChar === '/') {
+        if (this.text[this.index + 1] === '/') {
+          this.skipLineComment();
+          continue;
+        }
+        if (this.text[this.index + 1] === '*') {
+          this.skipBlockComment();
+          continue;
+        }
         const token = new Token(TT.DIV, this.currChar);
         this.advance();
         return token;
